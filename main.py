@@ -121,7 +121,7 @@ class TrayIcon(QSystemTrayIcon):
 if __name__ == '__main__':
     # Create the Qt Application
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("/opt/Dell-G15-LedControl/alien.svg"))
+    app.setWindowIcon(QIcon("/opt/dell-g15-ledcontrol/alien.svg"))
     app.setQuitOnLastWindowClosed(False)
 
     # Create and show the window
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     form.show()
 
     # Add item on the system tray
-    icon = QIcon("/opt/Dell-G15-LedControl/alien.svg")  # Add an icon
+    icon = QIcon("/opt/dell-g15-ledcontrol/alien.svg")  # Add an icon
     tray = TrayIcon(form)
     tray.setIcon(icon)
     tray.setVisible(True)
