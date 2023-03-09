@@ -121,7 +121,8 @@ class TrayIcon(QSystemTrayIcon):
 if __name__ == '__main__':
     # Create the Qt Application
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("/opt/dell-g15-ledcontrol/alien.svg"))
+    icon = QIcon.fromTheme("alienarena")
+    app.setWindowIcon(icon)
     app.setQuitOnLastWindowClosed(False)
 
     # Create and show the window
@@ -129,7 +130,6 @@ if __name__ == '__main__':
     form.show()
 
     # Add item on the system tray
-    icon = QIcon("/opt/dell-g15-ledcontrol/alien.svg")  # Add an icon
     tray = TrayIcon(form)
     tray.setIcon(icon)
     tray.setVisible(True)
@@ -137,13 +137,16 @@ if __name__ == '__main__':
 
     # System tray options
     menu = QMenu()
+    show = QAction("Show Window")
     quit = QAction("Quit")
+    menu.addAction(show)
     menu.addAction(quit)
     # Adding options to the System Tray
     tray.setContextMenu(menu)
 
     # Register callbacks
     quit.triggered.connect(app.quit)
+    show.triggered.connect(form.show)
 
     # Run the main Qt loop
     sys.exit(app.exec())
