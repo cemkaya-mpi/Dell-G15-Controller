@@ -1,7 +1,7 @@
 #!/bin/python
 import sys
-import subprocess
 import pexpect
+import tempfile
 import awelc
 import PySide6
 from PySide6.QtCore import (QSettings, QTimer)
@@ -14,6 +14,14 @@ class MainWindow(QWidget):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
+        try:
+            self.logfile = open("/tmp/dellg15controller.log","w")
+            sys.stdout = self.logfile
+        except:
+            print("Exception trying to open /tmp/dellg15controller.log")
+            exit()
+        print("Log file:{}".format(self.logfile))
+        self.logfile.write("test")
         self.init_acpi_call()
         self.setMinimumWidth(300)
         self.setWindowTitle("Dell G15 Controller")
@@ -60,7 +68,7 @@ class MainWindow(QWidget):
         
         print("Attempting to create elevated bash subprocess.")
         # Create a shell subprocess (root needed for power related functions)
-        self.shell = pexpect.spawn('bash', encoding='utf-8')
+        self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile)
         self.shell.expect("[#$] ")
         # Check if user is member of plugdev
         self.is_plugdev = (self.parse_shell_exec(self.shell_exec("groups")[1]).find("plugdev") != -1)
@@ -232,10 +240,11 @@ class MainWindow(QWidget):
             message = "Error! Command returned: {}, but expecting {}.\n".format(str(result),str(mode))
         # Get G Mode
         result = self.acpi_call("get_G_mode")
-        if (choice == "G Mode") != (result == "0x00"):  #Toggle G Mode if needed.
+        if (choice == "G Mode") != (result == "0x1"):  #Toggle G Mode if needed.
             #Toggle G mode
             result_toggle = self.acpi_call("toggle_G_mode")
-            if (("0x1" if choice == "G Mode" else "0x0") != result_toggle): message = message + "Expected to read G Mode = {} but read {}!\n".format(choice == "G Mode",result_toggle)
+            if (("0x1" if choice == "G Mode" else "0x0") != result_toggle): 
+                message = message + "Expected to read G Mode = {} but read {}!\n".format(choice == "G Mode",result_toggle)
 
         self.info_label.setText(message)
     
