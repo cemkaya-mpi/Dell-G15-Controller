@@ -21,14 +21,15 @@ class MainWindow(QWidget):
         self.settings = QSettings('Dell-G15', 'Controller')
         #Create grid layout
         grid = QGridLayout()
+        self.timer = None
         if (self.is_plugdev):
             grid.addWidget(self.createFirstExclusiveGroup(), 0, 0)
         if (self.is_root and self.is_dell_g15):
             grid.addWidget(self.createSecondExclusiveGroup(), 0, 1)
-            timer = QTimer(self)    #timer to update fan rpm values
-            timer.setInterval(5000)
-            timer.timeout.connect(self.get_rpm)
-            timer.start()
+            self.timer = QTimer(self)    #timer to update fan rpm values
+            self.timer.setInterval(5000)
+            self.timer.timeout.connect(self.get_rpm)
+            self.timer.start()
         self.setLayout(grid)
 
     def init_acpi_call(self):
@@ -261,12 +262,13 @@ class MainWindow(QWidget):
         self.info_label.setText("Fan2 Boost: {:.0f}% to {:.0f}%.".format(int(fan2_last_boost,0)/0xff*100,int(fan2_new_boost,0)/0xff*100))
     
     def get_rpm(self):
-        #Fan1 has id 0x32
-        #Get current fan rpm
-        fan1_rpm = self.acpi_call("get_fan1_rpm")
-        fan2_rpm = self.acpi_call("get_fan2_rpm")
-        self.fan1_current.setText("{} RPM".format(int(fan1_rpm,0)))
-        self.fan2_current.setText("{} RPM".format(int(fan2_rpm,0)))
+        if self.isVisible():
+            #Fan1 has id 0x32
+            #Get current fan rpm
+            fan1_rpm = self.acpi_call("get_fan1_rpm")
+            fan2_rpm = self.acpi_call("get_fan2_rpm")
+            self.fan1_current.setText("{} RPM".format(int(fan1_rpm,0)))
+            self.fan2_current.setText("{} RPM".format(int(fan2_rpm,0)))
     # Helper Functions
     
     #Execute given command in elevated shell
