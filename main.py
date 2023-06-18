@@ -333,7 +333,7 @@ class TrayIcon(QSystemTrayIcon):
 
     def __init__(self, window, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.settings = QSettings('Dell-G15', 'LedControl')
+        self.settings = QSettings('Dell-G15', 'Controller')
         self.state = (self.settings.value("State", "Off"))
         self.activated.connect(self.toggle_leds)
         self.window = window
