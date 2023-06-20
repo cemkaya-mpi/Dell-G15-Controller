@@ -71,7 +71,7 @@ class MainWindow(QWidget):
         self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile)
         self.shell.expect("[#$] ")
         # Check if user is member of plugdev
-        self.is_plugdev = (self.parse_shell_exec(self.shell_exec("groups")[1]).find("plugdev") != -1)
+        self.is_plugdev = (self.shell_exec("groups")[1].find("plugdev") != -1)
         if self.is_plugdev:
             print("User is member of group of plugdev.")
         else:
@@ -80,7 +80,7 @@ class MainWindow(QWidget):
         #Elevate privileges (pkexec is needed)
         self.shell_exec("pkexec")
         #Check if root or not
-        self.is_root = (self.parse_shell_exec(self.shell_exec("whoami")[1]) == "root")
+        self.is_root = (self.shell_exec("whoami")[1].find("root") != -1)
         if self.is_root:
             print("Bash shell is root. Enabling ACPI methods...")
             # Check laptop model and inform user if model is not supported.
