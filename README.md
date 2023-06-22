@@ -17,7 +17,10 @@ Otherwise, no installation necessary, besides installing python dependencies, an
 SUBSYSTEM=="usb", ATTRS{idVendor}=="187c", ATTRS{idProduct}=="0550", MODE="0660", GROUP="plugdev", SYMLINK+="awelc"
 ```
 
-Polkit is required for power and fan related functionality.
+Polkit is required for power and fan related functionality. If it is not already loaded, load the acpi_call module before launching this application.
+```
+modprobe acpi_call
+```
 
 
 ## Screenshots
