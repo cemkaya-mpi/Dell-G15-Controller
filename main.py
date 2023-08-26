@@ -35,7 +35,7 @@ class MainWindow(QWidget):
         if (self.is_root and self.is_dell_g15):
             grid.addWidget(self.createSecondExclusiveGroup(), 0, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
-            self.timer.setInterval(5000)
+            self.timer.setInterval(1000)
             self.timer.timeout.connect(self.get_rpm_and_temp)
             self.timer.start()
         self.setLayout(grid)
