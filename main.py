@@ -23,7 +23,7 @@ class MainWindow(QWidget):
         print("Log file:{}".format(self.logfile))
         self.logfile.write("test")
         self.init_acpi_call()
-        self.setMinimumWidth(300)
+        self.setMinimumWidth(500)
         self.setWindowTitle("Dell G15 Controller")
         # Read last choices from QSettings
         self.settings = QSettings('Dell-G15', 'Controller')
@@ -36,7 +36,7 @@ class MainWindow(QWidget):
             grid.addWidget(self.createSecondExclusiveGroup(), 0, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(5000)
-            self.timer.timeout.connect(self.get_rpm)
+            self.timer.timeout.connect(self.get_rpm_and_temp)
             self.timer.start()
         self.setLayout(grid)
 
@@ -60,9 +60,11 @@ class MainWindow(QWidget):
             "set_fan1_boost" : ["0x15", "0x02", "0x32"],            #To be used with a parameter
             "get_fan1_boost" : ["0x14", "0x0c", "0x32"],
             "get_fan1_rpm" : ["0x14", "0x05", "0x32"],
+            "get_cpu_temp" : ["0x14", "0x04", "0x01"],
             "set_fan2_boost" : ["0x15", "0x02", "0x33"],            #To be used with a parameter
             "get_fan2_boost" : ["0x14", "0x0c", "0x33"],
             "get_fan2_rpm" : ["0x14", "0x05", "0x33"],
+            "get_gpu_temp" : ["0x14", "0x04", "0x06"]
         }
         self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         
@@ -75,7 +77,7 @@ class MainWindow(QWidget):
         if self.is_plugdev:
             print("User is member of group of plugdev.")
         else:
-            choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Keyboard backlight will not work!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
         #Elevate privileges (pkexec is needed)
         self.shell_exec("pkexec")
@@ -127,7 +129,7 @@ class MainWindow(QWidget):
         widget = QWidget()
         hbox = QHBoxLayout(widget)
         self.combobox_mode = QComboBox()
-        self.combobox_mode.addItems(["Static Color", "Morph"])
+        self.combobox_mode.addItems(["Static Color", "Morph", "Off"])
         self.combobox_mode.setCurrentText(self.settings.value("Action", "Static Color"))
 
         self.button_apply = QPushButton("Apply")
@@ -219,8 +221,10 @@ class MainWindow(QWidget):
     def apply_leds(self):
         if self.settings.value("Action", "Static Color") == "Static Color":
             self.apply_static()
-        else:
+        elif self.settings.value("Action", "Static Color") == "Morph":
             self.apply_morph()
+        else:   #Off
+            self.remove_animation()
     
     def combobox_power(self):
         self.fan1_boost.setValue(0)
@@ -270,14 +274,15 @@ class MainWindow(QWidget):
         fan2_new_boost = self.acpi_call("get_fan2_boost")
         self.info_label.setText("Fan2 Boost: {:.0f}% to {:.0f}%.".format(int(fan2_last_boost,0)/0xff*100,int(fan2_new_boost,0)/0xff*100))
     
-    def get_rpm(self):
+    def get_rpm_and_temp(self):
         if self.isVisible():
-            #Fan1 has id 0x32
-            #Get current fan rpm
+            #Get current rpm and temp
             fan1_rpm = self.acpi_call("get_fan1_rpm")
+            cpu_temp = self.acpi_call("get_cpu_temp")
             fan2_rpm = self.acpi_call("get_fan2_rpm")
-            self.fan1_current.setText("{} RPM".format(int(fan1_rpm,0)))
-            self.fan2_current.setText("{} RPM".format(int(fan2_rpm,0)))
+            gpu_temp = self.acpi_call("get_gpu_temp")
+            self.fan1_current.setText("{} RPM, {} °C".format(int(fan1_rpm,0),int(cpu_temp,0)))
+            self.fan2_current.setText("{} RPM, {} °C".format(int(fan2_rpm,0),int(gpu_temp,0)))
     # Helper Functions
     
     #Execute given command in elevated shell
@@ -326,17 +331,23 @@ class MainWindow(QWidget):
         self.settings.setValue("Blue", self.blue.value())
         self.settings.setValue("Duration", self.duration.value())
         self.settings.setValue("State", "On")
+    
+    def remove_animation(self):
+        awelc.remove_animation()
 
     # Apply last action when called from system tray
     def tray_on(self):
         if self.settings.value("Action", "Static Color") == "Static Color":
             self.apply_static()
-        else:  # morph
+        elif self.settings.value("Action", "Static Color") == "Morph":
             self.apply_morph()
+        else:  #Off
+            self.remove_animation()
         self.settings.setValue("State", "On")
 
     def tray_off(self):
-        awelc.set_static(0, 0, 0)
+        # awelc.set_static(0, 0, 0)
+        awelc.remove_animation()
         self.settings.setValue("State", "Off")
 
 

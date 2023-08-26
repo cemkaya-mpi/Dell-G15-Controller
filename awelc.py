@@ -29,7 +29,6 @@ def init_device():
     elc = Elc(vid, pid, debug=0)
     return (elc, device)
 
-
 def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, effect=COLOR):
     if (effect == COLOR):
         elc.remove_animation(animation)
@@ -48,7 +47,6 @@ def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, 
         elc.finish_save_animation(animation)
         elc.set_default_animation(animation)
 
-
 def battery_flashing(elc):
     # Red flashing on battery low.
     elc.remove_animation(DC_LOW)
@@ -61,7 +59,6 @@ def battery_flashing(elc):
     elc.add_action((Action(COLOR, DURATION_BATTERY_LOW, TEMPO_MIN, 0, 0, 0),))
     elc.finish_save_animation(DC_LOW)
     elc.set_default_animation(DC_LOW)
-
 
 def set_static(red, green, blue):
     elc, device = init_device()
@@ -76,14 +73,13 @@ def set_static(red, green, blue):
     apply_action(elc, int(red/2), int(green/2), int(blue/2), DURATION_MAX, TEMPO_MIN,
                  DC_ON, COLOR)          # Half brightness on Battery
     battery_flashing(elc)  # Red flashing on battery low.
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 DEFAULT_POST_BOOT, COLOR)       # Off on post-boot
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 RUNNING_START, COLOR)           # Off on start
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 RUNNING_FINISH, COLOR)          # Off on finish
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              DEFAULT_POST_BOOT, COLOR)       # Off on post-boot
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              RUNNING_START, COLOR)           # Off on start
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              RUNNING_FINISH, COLOR)          # Off on finish
     device.reset()
-
 
 def set_morph(red, green, blue, duration):
     elc, device = init_device()
@@ -98,10 +94,26 @@ def set_morph(red, green, blue, duration):
     apply_action(elc, int(red/2), int(green/2), int(blue/2), duration, TEMPO_MIN,
                  DC_ON, MORPH)          # Half brightness on Battery
     battery_flashing(elc)  # Red flashing on battery low.
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 DEFAULT_POST_BOOT, COLOR)       # Off on post-boot
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 RUNNING_START, COLOR)           # Off on start
-    apply_action(elc, 0, 0, 0, 0, 0,
-                 RUNNING_FINISH, COLOR)          # Off on finish
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              DEFAULT_POST_BOOT, COLOR)       # Off on post-boot
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              RUNNING_START, COLOR)           # Off on start
+    # apply_action(elc, 0, 0, 0, 0, 0,
+    #              RUNNING_FINISH, COLOR)          # Off on finish
+    device.reset()
+
+def remove_animation():
+    set_static(0,0,0)
+    elc, device = init_device()
+    elc.remove_animation(AC_SLEEP)
+    elc.remove_animation(AC_CHARGED)
+    elc.remove_animation(AC_CHARGING)
+    elc.remove_animation(DC_SLEEP)
+    elc.remove_animation(DC_ON)
+    elc.remove_animation(DC_LOW)
+    # elc.remove_animation(DEFAULT_POST_BOOT)
+    # elc.remove_animation(RUNNING_START)
+    # elc.remove_animation(RUNNING_FINISH)
+    elc.get_animation_count()
+    elc.get_status()
     device.reset()
