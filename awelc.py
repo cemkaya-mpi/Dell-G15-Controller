@@ -50,6 +50,21 @@ def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, 
         elc.finish_save_animation(animation)
         elc.set_default_animation(animation)
 
+def apply_action_color_and_morph(elc, red, green, blue, red_morph, green_morph, blue_morph, duration, tempo, animation=AC_CHARGING):
+    elc.remove_animation(animation)
+    elc.start_new_animation(animation)
+    elc.start_series(ZONES_NP)
+    elc.add_action((Action(MORPH, duration, tempo, red_morph, green_morph, blue_morph),Action(MORPH, duration, tempo, green_morph, blue_morph, red_morph),Action(MORPH, duration, tempo, blue_morph, red_morph, green_morph)))
+    # elc.finish_save_animation(animation)
+    
+    # elc.start_new_animation(animation)
+    elc.start_series(ZONES_KB)
+    elc.add_action((Action(COLOR, duration, tempo, red, green, blue),))
+    elc.finish_save_animation(animation)
+
+    elc.set_default_animation(animation)
+
+
 def battery_flashing(elc):
     # Red flashing on battery low.
     elc.remove_animation(DC_LOW)
@@ -107,32 +122,20 @@ def set_morph(red, green, blue, duration):
     #              RUNNING_FINISH, COLOR)          # Off on finish
     device.reset()
 
-def set_color_and_morph(red, green, blue, duration):
+def set_color_and_morph(red, green, blue,red_morph, green_morph, blue_morph, duration):
     set_dim(0)
     elc, device = init_device()
-    #Set static color on keyboard
-    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
-                 AC_SLEEP, COLOR, ZONES_KB)       # Off on AC Sleep
-    apply_action(elc, red, green, blue, DURATION_MAX, TEMPO_MIN,
-                 AC_CHARGED, COLOR, ZONES_KB)     # Full brightness on AC, charged
-    apply_action(elc, red, green, blue, DURATION_MAX, TEMPO_MIN,
-                 AC_CHARGING, COLOR, ZONES_KB)    # Full brightness on AC, charging
-    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
-                 DC_SLEEP, COLOR, ZONES_KB)       # Off on DC Sleep
-    apply_action(elc, int(red/2), int(green/2), int(blue/2), DURATION_MAX, TEMPO_MIN,
-                 DC_ON, COLOR, ZONES_KB)          # Half brightness on Battery
-    battery_flashing(elc)               # Red flashing on battery low.
-    #set morph on numpad
-    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
-                 AC_SLEEP, COLOR, ZONES_NP)       # Off on AC Sleep
-    apply_action(elc, red, green, blue, duration, TEMPO_MIN,
-                 AC_CHARGED, MORPH, ZONES_NP)     # Full brightness on AC, charged
-    apply_action(elc, red, green, blue, duration, TEMPO_MIN,
-                 AC_CHARGING, MORPH, ZONES_NP)    # Full brightness on AC, charging
-    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
-                 DC_SLEEP, COLOR, ZONES_NP)       # Off on DC Sleep
-    apply_action(elc, int(red/2), int(green/2), int(blue/2), duration, TEMPO_MIN,
-                 DC_ON, MORPH, ZONES_NP)          # Half brightness on Battery
+    #Set static color on keyboard, and morph on numpad
+    apply_action_color_and_morph(elc, 0, 0, 0, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 AC_SLEEP)       # Off on AC Sleep
+    apply_action_color_and_morph(elc, red, green, blue, red_morph, green_morph, blue_morph, duration, TEMPO_MIN,
+                 AC_CHARGED)     # Full brightness on AC, charged
+    apply_action_color_and_morph(elc, red, green, blue, red_morph, green_morph, blue_morph, duration, TEMPO_MIN,
+                 AC_CHARGING)    # Full brightness on AC, charging
+    apply_action_color_and_morph(elc,0, 0, 0, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 DC_SLEEP)       # Off on DC Sleep
+    apply_action_color_and_morph(elc, int(red/2), int(green/2), int(blue/2), int(red_morph/2), int(green_morph/2), int(blue_morph/2), duration, TEMPO_MIN,
+                 DC_ON)          # Half brightness on Battery
     battery_flashing(elc)  # Red flashing on battery low.
     device.reset()
 
