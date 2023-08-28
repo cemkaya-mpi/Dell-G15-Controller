@@ -334,20 +334,24 @@ class MainWindow(QWidget):
     
     def remove_animation(self):
         awelc.remove_animation()
+        self.settings.setValue("State", "Off")
 
     # Apply last action when called from system tray
     def tray_on(self):
-        if self.settings.value("Action", "Static Color") == "Static Color":
-            self.apply_static()
-        elif self.settings.value("Action", "Static Color") == "Morph":
-            self.apply_morph()
-        else:  #Off
-            self.remove_animation()
+        # if self.settings.value("Action", "Static Color") == "Static Color":
+        #     self.apply_static()
+        # elif self.settings.value("Action", "Static Color") == "Morph":
+        #     self.apply_morph()
+        # else:  #Off
+        #     self.remove_animation()
+        awelc.set_dim(0)
         self.settings.setValue("State", "On")
+
 
     def tray_off(self):
         # awelc.set_static(0, 0, 0)
-        awelc.remove_animation()
+        # awelc.remove_animation()
+        awelc.set_dim(100)
         self.settings.setValue("State", "Off")
 
 

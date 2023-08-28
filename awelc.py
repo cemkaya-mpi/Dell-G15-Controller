@@ -61,6 +61,7 @@ def battery_flashing(elc):
     elc.set_default_animation(DC_LOW)
 
 def set_static(red, green, blue):
+    set_dim(0)
     elc, device = init_device()
     apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
                  AC_SLEEP, COLOR)       # Off on AC Sleep
@@ -82,6 +83,7 @@ def set_static(red, green, blue):
     device.reset()
 
 def set_morph(red, green, blue, duration):
+    set_dim(0)
     elc, device = init_device()
     apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
                  AC_SLEEP, COLOR)       # Off on AC Sleep
@@ -103,7 +105,7 @@ def set_morph(red, green, blue, duration):
     device.reset()
 
 def remove_animation():
-    set_static(0,0,0)
+    set_dim(100)
     elc, device = init_device()
     elc.remove_animation(AC_SLEEP)
     elc.remove_animation(AC_CHARGED)
@@ -114,6 +116,14 @@ def remove_animation():
     # elc.remove_animation(DEFAULT_POST_BOOT)
     # elc.remove_animation(RUNNING_START)
     # elc.remove_animation(RUNNING_FINISH)
-    elc.get_animation_count()
-    elc.get_status()
+    animations = elc.get_animation_count()
+    while animations != (0,0):
+        print("Removing unknown animation {}".format(animations[1]))
+        elc.remove_animation(animations[1])
+        animations = elc.get_animation_count()
+    device.reset()
+
+def set_dim(level):
+    elc, device = init_device()
+    elc.dim(ZONES,level)
     device.reset()
