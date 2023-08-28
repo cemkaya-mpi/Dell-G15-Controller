@@ -12,6 +12,9 @@ DURATION_MIN = 0x00
 TEMPO_MAX = 0xff
 TEMPO_MIN = 0x01
 ZONES = [0, 1, 2, 3]
+ZONES_KB = [0, 1, 2]
+ZONES_NP = [3]
+
 
 
 def init_device():
@@ -29,11 +32,11 @@ def init_device():
     elc = Elc(vid, pid, debug=0)
     return (elc, device)
 
-def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, effect=COLOR):
+def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, effect=COLOR, zones=ZONES):
     if (effect == COLOR):
         elc.remove_animation(animation)
         elc.start_new_animation(animation)
-        elc.start_series(ZONES)
+        elc.start_series(zones)
         # Static color, 2 second duration, tempo tempo (who cares?)
         elc.add_action((Action(effect, duration, tempo, red, green, blue),))
         elc.finish_save_animation(animation)
@@ -41,7 +44,7 @@ def apply_action(elc, red, green, blue, duration, tempo, animation=AC_CHARGING, 
     else:  # Then, effect is morph.
         elc.remove_animation(animation)
         elc.start_new_animation(animation)
-        elc.start_series(ZONES)
+        elc.start_series(zones)
         elc.add_action((Action(MORPH, duration, tempo, red, green, blue), Action(MORPH, duration, tempo, green,
                        blue, red), Action(MORPH, duration, tempo, blue, red, green)))  # Morph based on given values.
         elc.finish_save_animation(animation)
@@ -102,6 +105,35 @@ def set_morph(red, green, blue, duration):
     #              RUNNING_START, COLOR)           # Off on start
     # apply_action(elc, 0, 0, 0, 0, 0,
     #              RUNNING_FINISH, COLOR)          # Off on finish
+    device.reset()
+
+def set_color_and_morph(red, green, blue, duration):
+    set_dim(0)
+    elc, device = init_device()
+    #Set static color on keyboard
+    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 AC_SLEEP, COLOR, ZONES_KB)       # Off on AC Sleep
+    apply_action(elc, red, green, blue, DURATION_MAX, TEMPO_MIN,
+                 AC_CHARGED, COLOR, ZONES_KB)     # Full brightness on AC, charged
+    apply_action(elc, red, green, blue, DURATION_MAX, TEMPO_MIN,
+                 AC_CHARGING, COLOR, ZONES_KB)    # Full brightness on AC, charging
+    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 DC_SLEEP, COLOR, ZONES_KB)       # Off on DC Sleep
+    apply_action(elc, int(red/2), int(green/2), int(blue/2), DURATION_MAX, TEMPO_MIN,
+                 DC_ON, COLOR, ZONES_KB)          # Half brightness on Battery
+    battery_flashing(elc)               # Red flashing on battery low.
+    #set morph on numpad
+    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 AC_SLEEP, COLOR, ZONES_NP)       # Off on AC Sleep
+    apply_action(elc, red, green, blue, duration, TEMPO_MIN,
+                 AC_CHARGED, MORPH, ZONES_NP)     # Full brightness on AC, charged
+    apply_action(elc, red, green, blue, duration, TEMPO_MIN,
+                 AC_CHARGING, MORPH, ZONES_NP)    # Full brightness on AC, charging
+    apply_action(elc, 0, 0, 0, DURATION_MAX, TEMPO_MIN,
+                 DC_SLEEP, COLOR, ZONES_NP)       # Off on DC Sleep
+    apply_action(elc, int(red/2), int(green/2), int(blue/2), duration, TEMPO_MIN,
+                 DC_ON, MORPH, ZONES_NP)          # Half brightness on Battery
+    battery_flashing(elc)  # Red flashing on battery low.
     device.reset()
 
 def remove_animation():

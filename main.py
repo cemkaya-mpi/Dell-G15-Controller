@@ -129,7 +129,7 @@ class MainWindow(QWidget):
         widget = QWidget()
         hbox = QHBoxLayout(widget)
         self.combobox_mode = QComboBox()
-        self.combobox_mode.addItems(["Static Color", "Morph", "Off"])
+        self.combobox_mode.addItems(["Static Color", "Morph", "Color and Morph", "Off"])
         self.combobox_mode.setCurrentText(self.settings.value("Action", "Static Color"))
 
         self.button_apply = QPushButton("Apply")
@@ -223,6 +223,8 @@ class MainWindow(QWidget):
             self.apply_static()
         elif self.settings.value("Action", "Static Color") == "Morph":
             self.apply_morph()
+        elif self.settings.value("Action", "Static Color") == "Color and Morph":
+            self.apply_color_and_morph()    
         else:   #Off
             self.remove_animation()
     
@@ -326,6 +328,16 @@ class MainWindow(QWidget):
         awelc.set_morph(self.red.value(), self.green.value(),
                         self.blue.value(), self.duration.value())
         self.settings.setValue("Action", "Morph")
+        self.settings.setValue("Red", self.red.value())
+        self.settings.setValue("Green", self.green.value())
+        self.settings.setValue("Blue", self.blue.value())
+        self.settings.setValue("Duration", self.duration.value())
+        self.settings.setValue("State", "On")
+    
+    def apply_color_and_morph(self):
+        awelc.set_color_and_morph(self.red.value(), self.green.value(),
+                        self.blue.value(), self.duration.value())
+        self.settings.setValue("Action", "Color and Morph")
         self.settings.setValue("Red", self.red.value())
         self.settings.setValue("Green", self.green.value())
         self.settings.setValue("Blue", self.blue.value())
