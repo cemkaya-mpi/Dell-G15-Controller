@@ -106,7 +106,7 @@ class MainWindow(QWidget):
         self.red.setMinimum(0)
         self.red.setMaximum(255)
         self.red.setMinimumSize(100,0)
-        self.red.setValue(int(self.settings.value("Red", 122)))
+        self.red.setValue(int(self.settings.value("Red Static", 122)))
         self.red_morph_label = QLabel("Red Morph")
         self.red_morph = QSlider(orientation=PySide6.QtCore.Qt.Orientation(0x01))
         self.red_morph.setMinimum(0)
