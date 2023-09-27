@@ -66,7 +66,6 @@ class MainWindow(QWidget):
             "get_fan2_rpm" : ["0x14", "0x05", "0x33"],
             "get_gpu_temp" : ["0x14", "0x04", "0x06"]
         }
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         
         print("Attempting to create elevated bash subprocess.")
         # Create a shell subprocess (root needed for power related functions)
@@ -83,18 +82,29 @@ class MainWindow(QWidget):
         self.shell_exec("pkexec")
         #Check if root or not
         self.is_root = (self.shell_exec("whoami")[1].find("root") != -1)
-        if self.is_root:
-            print("Bash shell is root. Enabling ACPI methods...")
-            # Check laptop model and inform user if model is not supported.
-            self.is_dell_g15 = (self.acpi_call("get_laptop_model") == "0x12c0")
-            if self.is_dell_g15:
-                print("Laptop model is supported.")
-            else:
-                choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-                self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
-        else:
+        if not self.is_root:
             print("Bash shell is NOT root. Disabling ACPI methods...")
             popup = QMessageBox.information(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
+            return
+
+        print("Bash shell is root. Enabling ACPI methods...")
+
+        # Check laptop model and inform user if model is not supported.
+        # For now we don't mind whether older/newer model needs different ACPI call dict
+        g15_5520_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        g15_5525_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        
+        for cmd in [g15_5520_cmd, g15_5525_cmd]:
+            self.acpi_cmd = cmd
+            if (self.acpi_call("get_laptop_model") == "0x12c0"):
+                self.is_dell_g15 = True
+                break
+
+        if self.is_dell_g15:
+            print("Laptop model is supported.")
+        else:
+            choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
