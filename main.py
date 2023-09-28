@@ -8,6 +8,7 @@ from PySide6.QtCore import (QSettings, QTimer)
 from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
+from patch import g15_5520_patch
 
 
 class MainWindow(QWidget):
@@ -89,22 +90,29 @@ class MainWindow(QWidget):
 
         print("Bash shell is root. Enabling ACPI methods...")
 
-        # Check laptop model and inform user if model is not supported.
-        # For now we don't mind whether older/newer model needs different ACPI call dict
-        g15_5520_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
-        g15_5525_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
-        
-        for cmd in [g15_5520_cmd, g15_5525_cmd]:
-            self.acpi_cmd = cmd
-            if (self.acpi_call("get_laptop_model") == "0x12c0"):
-                self.is_dell_g15 = True
-                break
+        self.checkLaptapModel()
 
         if self.is_dell_g15:
             print("Laptop model is supported.")
         else:
             choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
+    
+    def checkLaptapModel(self):
+        # Check laptop model and inform user if model is not supported.
+        commands = {
+            5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
+            5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
+        }
+        
+        for (command, patch) in commands.values():
+            self.acpi_cmd = command
+            if patch:
+                patch(self)
+            
+            if (self.acpi_call("get_laptop_model") == "0x12c0"):
+                self.is_dell_g15 = True
+                break
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
