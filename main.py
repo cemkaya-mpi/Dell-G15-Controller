@@ -94,7 +94,7 @@ class MainWindow(QWidget):
                 self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
         else:
             print("Bash shell is NOT root. Disabling ACPI methods...")
-            popup = QMessageBox.information(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
+            popup = QMessageBox.warning(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
@@ -172,7 +172,7 @@ class MainWindow(QWidget):
 
         # Add button callbacks
         self.combobox_mode.currentTextChanged.connect(self.combobox_choice)
-        self.button_apply.clicked.connect(self.apply_leds)
+        self.button_apply.clicked.connect(self.try_apply_leds)
         
         #Return
         groupBox.setLayout(vbox)
@@ -243,6 +243,13 @@ class MainWindow(QWidget):
     def combobox_choice(self):
         self.settings.setValue("Action", self.combobox_mode.currentText())
     
+    def try_apply_leds(self):
+        try:
+            self.apply_leds()
+        except Exception as err:
+            QMessageBox.warning(self,"Error",f"Cannot apply LED settings:\n\n{err.__class__.__name__}: {err}")
+            raise err
+
     def apply_leds(self):
         if self.settings.value("Action", "Static Color") == "Static Color":
             self.apply_static()
