@@ -1,5 +1,5 @@
 # Dell-G15-Controller
-A simple GUI app written in PyQt to control keyboard backlight, power mode and fan speed on Dell G15 (5525) Laptops. Untested on any other laptop, but keyboard part can most likely be used with models that have the ```Bus *** Device ***: ID 187c:0550 Alienware Corporation LED controller```. Power related functions are specific to Dell G15 (5525), but might work on similar models.
+A simple GUI app written in PyQt to control keyboard backlight, power mode and fan speed on Dell G15 (5525 and 5520) Laptops. Untested on any other laptop, but keyboard part can most likely be used with models that have the ```Bus *** Device ***: ID 187c:0550 Alienware Corporation LED controller```. Power related functions are specific to Dell G15 (5525 and 5520), but might work on similar models.
 
 By default, leds will flash red on low battery, and have half brightness on battery.
 

@@ -8,6 +8,7 @@ from PySide6.QtCore import (QSettings, QTimer)
 from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
+from patch import g15_5520_patch
 
 
 class MainWindow(QWidget):
@@ -66,12 +67,12 @@ class MainWindow(QWidget):
             "get_fan2_rpm" : ["0x14", "0x05", "0x33"],
             "get_gpu_temp" : ["0x14", "0x04", "0x06"]
         }
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         
         print("Attempting to create elevated bash subprocess.")
         # Create a shell subprocess (root needed for power related functions)
-        self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile)
+        self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile, env=None, args=["--noprofile", "--norc"])
         self.shell.expect("[#$] ")
+        self.shell_exec(" export HISTFILE=/dev/null; history -c")
         # Check if user is member of plugdev
         self.is_plugdev = (self.shell_exec("groups")[1].find("plugdev") != -1)
         if self.is_plugdev:
@@ -80,21 +81,41 @@ class MainWindow(QWidget):
             choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
         #Elevate privileges (pkexec is needed)
-        self.shell_exec("pkexec")
+        self.shell_exec("pkexec bash --noprofile --norc")
+        self.shell_exec(" export HISTFILE=/dev/null; history -c")
         #Check if root or not
         self.is_root = (self.shell_exec("whoami")[1].find("root") != -1)
-        if self.is_root:
-            print("Bash shell is root. Enabling ACPI methods...")
-            # Check laptop model and inform user if model is not supported.
-            self.is_dell_g15 = (self.acpi_call("get_laptop_model") == "0x12c0")
-            if self.is_dell_g15:
-                print("Laptop model is supported.")
-            else:
-                choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-                self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
-        else:
+        if not self.is_root:
             print("Bash shell is NOT root. Disabling ACPI methods...")
             popup = QMessageBox.warning(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
+            return
+
+        print("Sh shell is root. Enabling ACPI methods...")
+
+        self.checkLaptapModel()
+
+        if self.is_dell_g15:
+            print("Laptop model is supported.")
+        else:
+            choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
+    
+    def checkLaptapModel(self):
+        # Check laptop model and inform user if model is not supported.
+        commands = {
+            5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
+            5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
+        }
+        
+        for (command, patch) in commands.values():
+            self.acpi_cmd = command
+            
+            if (self.acpi_call("get_laptop_model") == "0x12c0"):
+                self.is_dell_g15 = True
+                #Patch for G15 5520, if needed.
+                if patch:
+                    patch(self)
+                break
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
