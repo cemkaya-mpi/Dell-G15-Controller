@@ -109,11 +109,12 @@ class MainWindow(QWidget):
         
         for (command, patch) in commands.values():
             self.acpi_cmd = command
-            if patch:
-                patch(self)
             
             if (self.acpi_call("get_laptop_model") == "0x12c0"):
                 self.is_dell_g15 = True
+                #Patch for G15 5520, if needed.
+                if patch:
+                    patch(self)
                 break
         
     def createFirstExclusiveGroup(self):
