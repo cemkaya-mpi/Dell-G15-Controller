@@ -70,7 +70,7 @@ class MainWindow(QWidget):
         
         print("Attempting to create elevated bash subprocess.")
         # Create a shell subprocess (root needed for power related functions)
-        self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile)
+        self.shell = pexpect.spawn('sh', encoding='utf-8', logfile=self.logfile, env=None, args=["--noprofile"])
         self.shell.expect("[#$] ")
         # Check if user is member of plugdev
         self.is_plugdev = (self.shell_exec("groups")[1].find("plugdev") != -1)
@@ -80,7 +80,7 @@ class MainWindow(QWidget):
             choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
         #Elevate privileges (pkexec is needed)
-        self.shell_exec("pkexec")
+        self.shell_exec("pkexec sh")
         #Check if root or not
         self.is_root = (self.shell_exec("whoami")[1].find("root") != -1)
         if not self.is_root:
@@ -88,7 +88,7 @@ class MainWindow(QWidget):
             popup = QMessageBox.information(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
             return
 
-        print("Bash shell is root. Enabling ACPI methods...")
+        print("Sh shell is root. Enabling ACPI methods...")
 
         self.checkLaptapModel()
 
@@ -344,7 +344,7 @@ class MainWindow(QWidget):
         return self.parse_shell_exec(self.shell_exec(cmd_current)[1])   #Return parsed first line
 
     def shell_exec(self, cmd : str):
-        print("Bash: Executing {}".format(cmd))
+        print("Sh: Executing {}".format(cmd))
         self.shell.sendline(cmd)
         self.shell.expect("[#$] ")
         result = self.shell.before
