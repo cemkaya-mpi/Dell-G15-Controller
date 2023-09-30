@@ -172,7 +172,7 @@ class MainWindow(QWidget):
 
         # Add button callbacks
         self.combobox_mode.currentTextChanged.connect(self.combobox_choice)
-        self.button_apply.clicked.connect(self.try_apply_leds)
+        self.button_apply.clicked.connect(self.apply_leds)
         
         #Return
         groupBox.setLayout(vbox)
@@ -243,23 +243,20 @@ class MainWindow(QWidget):
     def combobox_choice(self):
         self.settings.setValue("Action", self.combobox_mode.currentText())
     
-    def try_apply_leds(self):
+    def apply_leds(self):
         try:
-            self.apply_leds()
+            if self.settings.value("Action", "Static Color") == "Static Color":
+                self.apply_static()
+            elif self.settings.value("Action", "Static Color") == "Morph":
+                self.apply_morph()
+            elif self.settings.value("Action", "Static Color") == "Color and Morph":
+                self.apply_color_and_morph()    
+            else:   #Off
+                self.remove_animation()
         except Exception as err:
             QMessageBox.warning(self,"Error",f"Cannot apply LED settings:\n\n{err.__class__.__name__}: {err}")
             raise err
 
-    def apply_leds(self):
-        if self.settings.value("Action", "Static Color") == "Static Color":
-            self.apply_static()
-        elif self.settings.value("Action", "Static Color") == "Morph":
-            self.apply_morph()
-        elif self.settings.value("Action", "Static Color") == "Color and Morph":
-            self.apply_color_and_morph()    
-        else:   #Off
-            self.remove_animation()
-    
     def combobox_power(self):
         self.fan1_boost.setValue(0)
         self.fan2_boost.setValue(0)
