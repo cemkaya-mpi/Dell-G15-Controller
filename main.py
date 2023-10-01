@@ -87,7 +87,7 @@ class MainWindow(QWidget):
         self.is_root = (self.shell_exec("whoami")[1].find("root") != -1)
         if not self.is_root:
             print("Bash shell is NOT root. Disabling ACPI methods...")
-            popup = QMessageBox.information(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
+            popup = QMessageBox.warning(self,"Warning","No root access. Power related functions will not work, and will not be displayed.")
             return
 
         print("Sh shell is root. Enabling ACPI methods...")
@@ -265,15 +265,19 @@ class MainWindow(QWidget):
         self.settings.setValue("Action", self.combobox_mode.currentText())
     
     def apply_leds(self):
-        if self.settings.value("Action", "Static Color") == "Static Color":
-            self.apply_static()
-        elif self.settings.value("Action", "Static Color") == "Morph":
-            self.apply_morph()
-        elif self.settings.value("Action", "Static Color") == "Color and Morph":
-            self.apply_color_and_morph()    
-        else:   #Off
-            self.remove_animation()
-    
+        try:
+            if self.settings.value("Action", "Static Color") == "Static Color":
+                self.apply_static()
+            elif self.settings.value("Action", "Static Color") == "Morph":
+                self.apply_morph()
+            elif self.settings.value("Action", "Static Color") == "Color and Morph":
+                self.apply_color_and_morph()    
+            else:   #Off
+                self.remove_animation()
+        except Exception as err:
+            QMessageBox.warning(self,"Error",f"Cannot apply LED settings:\n\n{err.__class__.__name__}: {err}")
+            raise err
+
     def combobox_power(self):
         self.fan1_boost.setValue(0)
         self.fan2_boost.setValue(0)
