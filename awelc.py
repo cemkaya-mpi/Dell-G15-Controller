@@ -21,7 +21,7 @@ def init_device():
     # So that we don't get an USB device busy error
     device = usb.core.find(idVendor=0x187c, idProduct=0x0550)
     if not device:
-        raise Exception('no such device was found. did you installed RGB keyboard properly?')
+        raise Exception('no such device was found. Do you have a RGB keyboard 187c:0550?')
 
     ep = device[0].interfaces()[0].endpoints()[0]
     i = device[0].interfaces()[0].bInterfaceNumber
