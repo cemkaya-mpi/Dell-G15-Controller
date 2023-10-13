@@ -97,7 +97,7 @@ class MainWindow(QWidget):
         if self.is_dell_g15:
             print("Laptop model is supported.")
         else:
-            choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods for G15 5525 anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
     
     def checkLaptapModel(self):
@@ -109,6 +109,8 @@ class MainWindow(QWidget):
         
         for (command, patch) in commands.values():
             self.acpi_cmd = command
+
+            self.is_dell_g15 = False
             
             if (self.acpi_call("get_laptop_model") == "0x12c0"):
                 self.is_dell_g15 = True
