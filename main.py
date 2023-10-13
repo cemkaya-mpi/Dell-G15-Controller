@@ -109,6 +109,8 @@ class MainWindow(QWidget):
         
         for (command, patch) in commands.values():
             self.acpi_cmd = command
+
+            self.is_dell_g15 = False
             
             if (self.acpi_call("get_laptop_model") == "0x12c0"):
                 self.is_dell_g15 = True
