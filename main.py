@@ -9,6 +9,7 @@ from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
 from patch import g15_5520_patch
+from patch import g15_5511_patch
 
 
 class MainWindow(QWidget):
@@ -105,6 +106,7 @@ class MainWindow(QWidget):
         commands = {
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
+            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
         }
         
         for (command, patch) in commands.values():
