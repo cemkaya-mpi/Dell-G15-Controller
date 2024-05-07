@@ -114,11 +114,19 @@ class MainWindow(QWidget):
 
             self.is_dell_g15 = False
             
-            if (self.acpi_call("get_laptop_model") == "0x12c0" or self.acpi_call("get_laptop_model") == "0xc80"):
+            if (self.acpi_call("get_laptop_model") == "0x12c0" ):
                 self.is_dell_g15 = True
                 #Patch for G15 5520 or 5511, if needed.
                 if patch:
-                    patch(self)
+                    g15_5520_patch(self)
+                    break
+
+            if (self.acpi_call("get_laptop_model") == "0xc80"):
+                self.is_dell_g15 = True
+                #Patch for G15 5520 or 5511, if needed.
+                if patch:
+                    g15_5511_patch(self)
+                    break
                 
         
     def createFirstExclusiveGroup(self):
