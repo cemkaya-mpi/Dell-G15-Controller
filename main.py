@@ -116,10 +116,10 @@ class MainWindow(QWidget):
             
             if (self.acpi_call("get_laptop_model") == "0x12c0"):
                 self.is_dell_g15 = True
-                #Patch for G15 5520, if needed.
+                #Patch for G15 5520 or 5511, if needed.
                 if patch:
                     patch(self)
-                break
+                
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
