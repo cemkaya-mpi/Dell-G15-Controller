@@ -9,6 +9,7 @@ from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
 from patch import g15_5520_patch
+from patch import g15_5511_patch
 
 
 class MainWindow(QWidget):
@@ -103,6 +104,7 @@ class MainWindow(QWidget):
     def checkLaptapModel(self):
         # Check laptop model and inform user if model is not supported.
         commands = {
+            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
@@ -111,10 +113,15 @@ class MainWindow(QWidget):
             self.acpi_cmd = command
 
             self.is_dell_g15 = False
-            
-            if (self.acpi_call("get_laptop_model") == "0x12c0"):
+            laptop_model=self.acpi_call("get_laptop_model")
+            if (
+                laptop_model == "0x12c0"  # 5525 and 5520 
+                or
+                laptop_model == "0xc80"   # 5511
+            ):
+                print("Detected dell g15. Laptop model: {}".format(laptop_model))
                 self.is_dell_g15 = True
-                #Patch for G15 5520, if needed.
+                #Patch for G15 5511/5520, if needed.
                 if patch:
                     patch(self)
                 break
