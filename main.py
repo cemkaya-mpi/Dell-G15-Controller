@@ -75,12 +75,13 @@ class MainWindow(QWidget):
         self.shell.expect("[#$] ")
         self.shell_exec(" export HISTFILE=/dev/null; history -c")
         # Check if user is member of plugdev
-        self.is_plugdev = (self.shell_exec("groups")[1].find("plugdev") != -1)
-        if self.is_plugdev:
-            print("User is member of group of plugdev.")
-        else:
-            choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
+        self.is_plugdev = False #(self.shell_exec("groups")[1].find("plugdev") != -1)
+        #if self.is_plugdev:
+        #    print("User is member of group of plugdev.")
+        #else:
+        #    choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        #    self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
+
         #Elevate privileges (pkexec is needed)
         self.shell_exec("pkexec bash --noprofile --norc")
         self.shell_exec(" export HISTFILE=/dev/null; history -c")
@@ -104,7 +105,7 @@ class MainWindow(QWidget):
     def checkLaptapModel(self):
         # Check laptop model and inform user if model is not supported.
         commands = {
-            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
+            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None), # g15_5511_patch),
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
