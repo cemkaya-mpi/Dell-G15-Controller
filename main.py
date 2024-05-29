@@ -11,19 +11,33 @@ from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox,
 from patch import g15_5520_patch
 from patch import g15_5511_patch
 
+##########
+#Settings#
+##########
+rgb_keyboard = False
+log = False
+logpath = '/tmp/dellg15controller.log'
+###########
+###########
+###########
 
 class MainWindow(QWidget):
 
     def __init__(self, parent=None):
+        if log == False:
+            self.logpath = '/dev/null'
+        else:
+            self.logpath = logpath
         super(MainWindow, self).__init__(parent)
         try:
-            self.logfile = open("/tmp/dellg15controller.log","w")
+            self.logfile = open(self.logpath,"w")
             sys.stdout = self.logfile
         except:
-            print("Exception trying to open /tmp/dellg15controller.log")
+            print("Exception trying to open {logpath}")
             exit()
-        print("Log file:{}".format(self.logfile))
-        self.logfile.write("test")
+        if log == True:
+            print("Log file:{}".format(self.logfile))
+            self.logfile.write("test")
         self.init_acpi_call()
         self.setMinimumWidth(600)
         self.setWindowTitle("Dell G15 Controller")
@@ -74,13 +88,16 @@ class MainWindow(QWidget):
         self.shell = pexpect.spawn('bash', encoding='utf-8', logfile=self.logfile, env=None, args=["--noprofile", "--norc"])
         self.shell.expect("[#$] ")
         self.shell_exec(" export HISTFILE=/dev/null; history -c")
-        # Check if user is member of plugdev
-        self.is_plugdev = False #(self.shell_exec("groups")[1].find("plugdev") != -1)
-        #if self.is_plugdev:
-        #    print("User is member of group of plugdev.")
-        #else:
-        #    choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        #    self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
+        if rgb_keyboard == True:
+            # Check if user is member of plugdev
+            self.is_plugdev = (self.shell_exec("groups")[1].find("plugdev") != -1)
+            if self.is_plugdev:
+                print("User is member of group of plugdev.")
+            else:
+                choice = QMessageBox.question(self,"Warning","User is not a member of group plugdev. Try to enable keyboard backlight control anyway?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                self.is_plugdev = (choice == QMessageBox.StandardButton.Yes) #User override
+        else:
+            self.is_plugdev = False
 
         #Elevate privileges (pkexec is needed)
         self.shell_exec("pkexec bash --noprofile --norc")
@@ -441,12 +458,13 @@ class TrayIcon(QSystemTrayIcon):
         self.window = window
 
     def toggle_leds(self, reason):
-        if self.settings.value("State", "Off") == "Off":
-            self.settings.setValue("State", "On")
-            self.window.tray_on()
-        else:
-            self.settings.setValue("State", "Off")
-            self.window.tray_off()
+        if rgb_keyboard == True:
+            if self.settings.value("State", "Off") == "Off":
+                self.settings.setValue("State", "On")
+                self.window.tray_on()
+            else:
+                self.settings.setValue("State", "Off")
+                self.window.tray_off()
 
 if __name__ == '__main__':
     # Create the Qt Application
