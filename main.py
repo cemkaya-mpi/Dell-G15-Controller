@@ -119,7 +119,7 @@ class MainWindow(QWidget):
                 or
                 laptop_model == "0xc80"   # 5511
             ):
-                print("Detected dell g15. Laptop model: {}".format(laptop_model))
+                print("Detected dell g15. Laptop model: 0x{:4X}".format(laptop_model))
                 self.is_dell_g15 = True
                 #Patch for G15 5511/5520, if needed.
                 if patch:
