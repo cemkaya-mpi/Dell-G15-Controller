@@ -93,7 +93,7 @@ class MainWindow(QWidget):
 
         print("Sh shell is root. Enabling ACPI methods...")
 
-        self.checkLaptapModel()
+        self.checkLaptopModel()
 
         if self.is_dell_g15:
             print("Laptop model is supported.")
@@ -101,7 +101,7 @@ class MainWindow(QWidget):
             choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods for G15 5525 anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
     
-    def checkLaptapModel(self):
+    def checkLaptopModel(self):
         # Check laptop model and inform user if model is not supported.
         commands = {
             5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
@@ -119,7 +119,7 @@ class MainWindow(QWidget):
                 or
                 laptop_model == "0xc80"   # 5511
             ):
-                print("Detected dell g15. Laptop model: 0x{:4X}".format(laptop_model))
+                print("Detected dell g15. Laptop model: 0x{}".format(laptop_model))
                 self.is_dell_g15 = True
                 #Patch for G15 5511/5520, if needed.
                 if patch:
