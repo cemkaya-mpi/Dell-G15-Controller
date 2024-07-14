@@ -105,6 +105,7 @@ class MainWindow(QWidget):
         # Check laptop model and inform user if model is not supported.
         commands = {
             5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
+            5515: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5515_patch),
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
@@ -117,11 +118,11 @@ class MainWindow(QWidget):
             if (
                 laptop_model == "0x12c0"  # 5525 and 5520 
                 or
-                laptop_model == "0xc80"   # 5511
+                laptop_model == "0xc80"   # 5511 and 5515
             ):
                 print("Detected dell g15. Laptop model: 0x{}".format(laptop_model))
                 self.is_dell_g15 = True
-                #Patch for G15 5511/5520, if needed.
+                #Patch for G15 5511/5515/5520, if needed.
                 if patch:
                     patch(self)
                 break
