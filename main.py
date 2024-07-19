@@ -9,6 +9,7 @@ from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
 from patch import g15_5520_patch
+from patch import g15_5515_patch
 from patch import g15_5511_patch
 
 
@@ -109,23 +110,42 @@ class MainWindow(QWidget):
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
-        
-        for (command, patch) in commands.values():
-            self.acpi_cmd = command
 
-            self.is_dell_g15 = False
-            laptop_model=self.acpi_call("get_laptop_model")
-            if (
-                laptop_model == "0x12c0"  # 5525 and 5520 
-                or
-                laptop_model == "0xc80"   # 5511 and 5515
-            ):
-                print("Detected dell g15. Laptop model: 0x{}".format(laptop_model))
-                self.is_dell_g15 = True
-                #Patch for G15 5511/5515/5520, if needed.
-                if patch:
-                    patch(self)
-                break
+        # Check if G15 5525
+        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        laptop_model=self.acpi_call("get_laptop_model")
+        if (laptop_model == "0x12c0"):
+            print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            #no patch needed.
+            return
+
+        # Check if G15 5520
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        laptop_model=self.acpi_call("get_laptop_model")
+        if (laptop_model == "0x12c0"):
+            print("Detected dell g15 5520. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            g15_5520_patch(self)
+            return
+
+        # Check if G15 5515
+        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        laptop_model=self.acpi_call("get_laptop_model")
+        if (laptop_model == "0xc80"):
+            print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            g15_5515_patch(self)
+            return
+
+        # Check if G15 5511
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        laptop_model=self.acpi_call("get_laptop_model")
+        if (laptop_model == "0xc80"):
+            print("Detected dell g15 5511. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            g15_5511_patch(self)
+            return
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
