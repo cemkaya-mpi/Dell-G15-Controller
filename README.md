@@ -25,12 +25,12 @@ Only static color and morph is supported at this time.
 
 ## Installation
 
-Create an udev rule ```/etc/udev/rules.d/00-aw-elc.rules```. Make sure the user is part of the ```plugdev``` group.
+Create an udev rule ```/etc/udev/rules.d/00-aw-elc.rules```.
 
 ```
 /etc/udev/rules.d/00-aw-elc.rules
 
-SUBSYSTEM=="usb", ATTRS{idVendor}=="187c", ATTRS{idProduct}=="0550", MODE="0660", GROUP="plugdev", SYMLINK+="awelc"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="187c", ATTRS{idProduct}=="0550", MODE="0660", TAG+="uaccess", SYMLINK+="awelc"
 ```
 
 Polkit is required for power and fan related functionality. If it is not already loaded, load the acpi_call module before launching this application.
