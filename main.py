@@ -95,12 +95,14 @@ class MainWindow(QWidget):
     
     def checkLaptopModel(self):
         # Check laptop model and inform user if model is not supported.
-        commands = {
-            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
-            5515: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5515_patch),
-            5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
-            5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
-        }
+        # Check if G15 5530
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        laptop_model=self.acpi_call("get_laptop_model")
+        if (laptop_model == "0x0"):
+            print("Detected dell g15 5530. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            g15_5530_patch(self)
+            return
 
         # Check if G15 5525
         self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
