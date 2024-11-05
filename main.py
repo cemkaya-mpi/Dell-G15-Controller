@@ -95,8 +95,9 @@ class MainWindow(QWidget):
     
     def checkLaptopModel(self):
         # Check laptop model and inform user if model is not supported.
+        self.is_dell_g15 = False
         # Check if G15 5530
-        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0x0"):
             print("Detected dell g15 5530. Laptop model: 0x{}".format(laptop_model))
@@ -105,7 +106,7 @@ class MainWindow(QWidget):
             return
 
         # Check if G15 5525
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
@@ -114,7 +115,7 @@ class MainWindow(QWidget):
             return
 
         # Check if G15 5520
-        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5520. Laptop model: 0x{}".format(laptop_model))
@@ -123,7 +124,7 @@ class MainWindow(QWidget):
             return
 
         # Check if G15 5515
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0xc80"):
             print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
@@ -132,7 +133,7 @@ class MainWindow(QWidget):
             return
 
         # Check if G15 5511
-        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0xc80"):
             print("Detected dell g15 5511. Laptop model: 0x{}".format(laptop_model))
@@ -371,7 +372,7 @@ class MainWindow(QWidget):
             cmd_current = self.acpi_cmd.format(args[0], args[1], arg1, arg2)
         else:
             cmd_current=""
-        return self.parse_shell_exec(self.shell_exec(cmd_current)[1])   #Return parsed first line
+        return self.parse_shell_exec(self.shell_exec(cmd_current)[2])   #Return parsed second line
 
     def shell_exec(self, cmd : str):
         print("Bash: Executing {}".format(cmd))
