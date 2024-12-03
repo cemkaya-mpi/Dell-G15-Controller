@@ -26,7 +26,7 @@ class MainWindow(QWidget):
         self.logfile.write("test")
         self.init_acpi_call()
         self.setMinimumWidth(600)
-        self.setWindowTitle("Dell G15 Controller")
+        self.setWindowTitle("Dell G Series Controller")
         # Read last choices from QSettings
         self.settings = QSettings('Dell-G15', 'Controller')
         #Create grid layout
