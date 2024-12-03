@@ -47,11 +47,14 @@ class MainWindow(QWidget):
             "USTT_Performance" : "0xa1",
             # "USTT_Cool" : "0xa2",   #Does not work
             "USTT_Quiet" : "0xa3",
-            "USTT_FullSpeed" : "0xa4",
             "USTT_BatterySaver" : "0xa5",
             "G Mode" : "0xab",
             "Manual" : "0x0",
         }
+        
+        if self.is_dell_g15 and not self.is_dell_g16:
+            self.power_modes_dict["USTT_FullSpeed"] = "0xa4"
+            
         self.acpi_call_dict = {
             "get_laptop_model" : ["0x1a", "0x02", "0x02"],
             "get_power_mode" : ["0x14", "0x0b", "0x00"],
