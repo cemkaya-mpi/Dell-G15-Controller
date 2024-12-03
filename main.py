@@ -19,10 +19,10 @@ class MainWindow(QWidget):
         self.is_dell_g15 = False
         self.is_dell_g16 = False
         try:
-            self.logfile = open("/tmp/dellg15controller.log","w")
+            self.logfile = open("/tmp/dell-g-series-controller.log","w")
             sys.stdout = self.logfile
         except:
-            print("Exception trying to open /tmp/dellg15controller.log")
+            print("Exception trying to open /tmp/dell-g-series-controller.log")
             exit()
         print("Log file:{}".format(self.logfile))
         self.logfile.write("test")
