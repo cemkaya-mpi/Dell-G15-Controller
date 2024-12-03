@@ -110,9 +110,11 @@ class MainWindow(QWidget):
             7630: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g16_7630_patch),
         }
 
-        # Check if G15 5520
+        # Detect Intel models
         self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
+
+        # Check if G15 5520
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5520. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
@@ -130,6 +132,7 @@ class MainWindow(QWidget):
 
         # Check if G16 7630
         if (laptop_model == "0x0"):
+            # TODO - VERIFY-ME - Is "0x0" really the expected response, or should we use a different ACPI call for this model?
             print("Detected dell g16 7630. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g16 = True
             self.is_dell_g15 = True
@@ -137,9 +140,11 @@ class MainWindow(QWidget):
             g16_7630_patch(self)
             return 
 
-        # Check if G15 5525
+        # Detect AMD models
         self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
+
+        # Check if G15 5525
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
