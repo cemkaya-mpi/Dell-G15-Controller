@@ -100,8 +100,10 @@ class MainWindow(QWidget):
             5515: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5515_patch),
             5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
+            7630: ("echo \"\\_SB.AMW0.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
         self.is_dell_g15 = False
+        self.is_dell_g16 = False
         # Check if G15 5525
         self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
@@ -109,6 +111,13 @@ class MainWindow(QWidget):
             print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
             #no patch needed.
+            return
+
+        # Check if G15 5515
+        if (laptop_model == "0xc80"):
+            print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g15 = True
+            g15_5515_patch(self)
             return
 
         # Check if G15 5520
@@ -120,22 +129,19 @@ class MainWindow(QWidget):
             g15_5520_patch(self)
             return
 
-        # Check if G15 5515
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
-        laptop_model=self.acpi_call("get_laptop_model")
-        if (laptop_model == "0xc80"):
-            print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
-            g15_5515_patch(self)
-            return
-
         # Check if G15 5511
-        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
-        laptop_model=self.acpi_call("get_laptop_model")
         if (laptop_model == "0xc80"):
             print("Detected dell g15 5511. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
             g15_5511_patch(self)
+            return
+
+        # Check if G16 7630
+        if (laptop_model == "0x0"):
+            print("Detected dell g16 7630. Laptop model: 0x{}".format(laptop_model))
+            self.is_dell_g16 = True
+            self.is_dell_g15 = True
+            # g15_5511_patch(self)
             return
         
     def createFirstExclusiveGroup(self):
