@@ -19,6 +19,7 @@ class MainWindow(QWidget):
         super(MainWindow, self).__init__(parent)
         self.is_dell_g15 = False
         self.is_dell_g16 = False
+        self.model = 'Unknown'
         try:
             self.logfile = open("/tmp/dell-g-series-controller.log","w")
             sys.stdout = self.logfile
@@ -35,9 +36,11 @@ class MainWindow(QWidget):
         #Create grid layout
         grid = QGridLayout()
         self.timer = None
-        grid.addWidget(self.createFirstExclusiveGroup(), 0, 0)
+        grid.addWidget(QLabel(f'Device Model:'), 0, 0)
+        grid.addWidget(QLabel(f'Dell {self.model}' if self.model != 'Unknown' else self.model), 0, 1)
+        grid.addWidget(self.createFirstExclusiveGroup(), 1, 0)
         if (self.is_root and self.is_dell_g15):
-            grid.addWidget(self.createSecondExclusiveGroup(), 0, 1)
+            grid.addWidget(self.createSecondExclusiveGroup(), 1, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(1000)
             self.timer.timeout.connect(self.get_rpm_and_temp)
@@ -113,6 +116,7 @@ class MainWindow(QWidget):
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5520. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
+            self.model = "G15 5520"
             g15_5520_patch(self)
             return
 
@@ -121,6 +125,7 @@ class MainWindow(QWidget):
             print("Detected dell g15 5511. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
             g15_5511_patch(self)
+            self.model = "G15 5511"
             return
 
         # Check if G16 7630
@@ -128,6 +133,7 @@ class MainWindow(QWidget):
             print("Detected dell g16 7630. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g16 = True
             self.is_dell_g15 = True
+            self.model = "G16 7630"
             g16_7630_patch(self)
             return 
 
@@ -137,6 +143,7 @@ class MainWindow(QWidget):
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
+            self.model = "G15 5525"
             return
 
         # Check if G15 5515
@@ -144,6 +151,7 @@ class MainWindow(QWidget):
             print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g15 = True
             g15_5515_patch(self)
+            self.model = "G15 5515"
 
         
     def createFirstExclusiveGroup(self):
