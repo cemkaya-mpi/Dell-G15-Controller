@@ -38,9 +38,9 @@ class MainWindow(QWidget):
         self.timer = None
         grid.addWidget(QLabel(f'Device Model:'), 0, 0)
         grid.addWidget(QLabel(f'Dell {self.model}' if self.model != 'Unknown' else self.model), 0, 1)
-        grid.addWidget(self.createFirstExclusiveGroup(), 1, 0)
+        grid.addWidget(self._create_first_exclusive_group(), 1, 0)
         if (self.is_root and self.is_dell_g15):
-            grid.addWidget(self.createSecondExclusiveGroup(), 1, 1)
+            grid.addWidget(self._create_second_exclusive_group(), 1, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(1000)
             self.timer.timeout.connect(self.get_rpm_and_temp)
@@ -92,7 +92,7 @@ class MainWindow(QWidget):
 
         print("Sh shell is root. Enabling ACPI methods...")
 
-        self.checkLaptopModel()
+        self._check_laptop_model()
 
         if self.is_dell_g15:
             print("Laptop model is supported.")
@@ -100,15 +100,8 @@ class MainWindow(QWidget):
             choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods for G15 5525 anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
     
-    def checkLaptopModel(self):
-        # Check laptop model and inform user if model is not supported.
-        commands = {
-            5511: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5511_patch),
-            5515: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5515_patch),
-            5520: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g15_5520_patch),
-            5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
-            7630: ("echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", g16_7630_patch),
-        }
+    def _check_laptop_model(self):
+        """Check for supported laptop model"""
 
         # Detect Intel models
         self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
@@ -159,7 +152,7 @@ class MainWindow(QWidget):
             self.model = "G15 5515"
 
         
-    def createFirstExclusiveGroup(self):
+    def _create_first_exclusive_group(self):
         groupBox = QGroupBox("Keyboard Led")
         vbox = QVBoxLayout()
         self.state = (self.settings.value("State", "Off"))
@@ -241,7 +234,8 @@ class MainWindow(QWidget):
         groupBox.setLayout(vbox)
         return groupBox
 
-    def createSecondExclusiveGroup(self):
+
+    def _create_second_exclusive_group(self):
         groupBox = QGroupBox("Power and Fans")
         vbox = QVBoxLayout()
         
@@ -305,7 +299,8 @@ class MainWindow(QWidget):
     #Callbacks
     def combobox_choice(self):
         self.settings.setValue("Action", self.combobox_mode.currentText())
-    
+
+
     def apply_leds(self):
         try:
             if self.settings.value("Action", "Static Color") == "Static Color":
@@ -319,6 +314,7 @@ class MainWindow(QWidget):
         except Exception as err:
             QMessageBox.warning(self,"Error",f"Cannot apply LED settings:\n\n{err.__class__.__name__}: {err}")
             raise err
+
 
     def combobox_power(self):
         self.fan1_boost.setValue(0)
@@ -345,7 +341,8 @@ class MainWindow(QWidget):
                 message = message + "Expected to read G Mode = {} but read {}!\n".format(choice == "G Mode",result_toggle)
 
         self.info_label.setText(message)
-    
+
+
     def slider_fan1(self):
         #Fan1 has id 0x32
         #Get current fan boost
@@ -356,7 +353,8 @@ class MainWindow(QWidget):
         #Get current fan boost
         fan1_new_boost = self.acpi_call("get_fan1_boost")
         self.info_label.setText("Fan1 Boost: {:.0f}% to {:.0f}%.".format(int(fan1_last_boost,0)/0xff*100,int(fan1_new_boost,0)/0xff*100))
-    
+
+
     def slider_fan2(self):
         #Fan2 has id 0x33
         #Get current fan boost
@@ -367,7 +365,8 @@ class MainWindow(QWidget):
         #Get current fan boost
         fan2_new_boost = self.acpi_call("get_fan2_boost")
         self.info_label.setText("Fan2 Boost: {:.0f}% to {:.0f}%.".format(int(fan2_last_boost,0)/0xff*100,int(fan2_new_boost,0)/0xff*100))
-    
+
+
     def get_rpm_and_temp(self):
         if self.isVisible():
             #Get current rpm and temp
@@ -392,6 +391,7 @@ class MainWindow(QWidget):
             cmd_current=""
         return self.parse_shell_exec(self.shell_exec(cmd_current)[1])   #Return parsed first line
 
+
     def shell_exec(self, cmd : str):
         print("Bash: Executing {}".format(cmd))
         self.shell.sendline(cmd)
@@ -402,8 +402,10 @@ class MainWindow(QWidget):
             print(line)
         return result
 
+
     def parse_shell_exec(self,line:str):
         return line[line.find('\r')+1:line.find('\x00')] #Read between carriage return and end of the line (disregard color)
+
 
     # Apply given colors to keyboard.
     def apply_static(self):
@@ -416,6 +418,7 @@ class MainWindow(QWidget):
         self.settings.setValue("Duration", self.duration.value())
         self.settings.setValue("State", "On")
 
+
     def apply_morph(self):
         awelc.set_morph(self.red_morph.value(), self.green_morph.value(),
                         self.blue_morph.value(), self.duration.value())
@@ -425,7 +428,8 @@ class MainWindow(QWidget):
         self.settings.setValue("Blue Morph", self.blue_morph.value())
         self.settings.setValue("Duration", self.duration.value())
         self.settings.setValue("State", "On")
-    
+
+
     def apply_color_and_morph(self):
         awelc.set_color_and_morph(self.red.value(), self.green.value(),
                         self.blue.value(), self.red_morph.value(), self.green_morph.value(),
@@ -439,7 +443,8 @@ class MainWindow(QWidget):
         self.settings.setValue("Blue Morph", self.blue_morph.value())
         self.settings.setValue("Duration", self.duration.value())
         self.settings.setValue("State", "On")
-    
+
+
     def remove_animation(self):
         awelc.remove_animation()
         self.settings.setValue("State", "Off")
@@ -454,7 +459,6 @@ class MainWindow(QWidget):
         #     self.remove_animation()
         awelc.set_dim(0)
         self.settings.setValue("State", "On")
-
 
     def tray_off(self):
         # awelc.set_static(0, 0, 0)
