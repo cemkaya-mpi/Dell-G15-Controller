@@ -16,6 +16,8 @@ class MainWindow(QWidget):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
+        self.is_dell_g15 = False
+        self.is_dell_g16 = False
         try:
             self.logfile = open("/tmp/dellg15controller.log","w")
             sys.stdout = self.logfile
@@ -105,8 +107,7 @@ class MainWindow(QWidget):
             5525: ("echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
             7630: ("echo \"\\_SB.AMW0.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call", None),
         }
-        self.is_dell_g15 = False
-        self.is_dell_g16 = False
+
         # Check if G15 5525
         self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
@@ -144,8 +145,7 @@ class MainWindow(QWidget):
             print("Detected dell g16 7630. Laptop model: 0x{}".format(laptop_model))
             self.is_dell_g16 = True
             self.is_dell_g15 = True
-            # g15_5511_patch(self)
-            return
+
         
     def createFirstExclusiveGroup(self):
         groupBox = QGroupBox("Keyboard Led")
