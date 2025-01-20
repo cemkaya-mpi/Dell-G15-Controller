@@ -1,13 +1,14 @@
-# Dell-G15-Controller
+# Dell-G-Series-Controller
 A simple GUI app written in PyQt to control keyboard backlight, power mode and fan speed on some Dell G15 and Alienware Laptops. Untested on any other laptop, but keyboard part can most likely be used with models that have the ```Bus *** Device ***: ID 187c:0550 Alienware Corporation LED controller```. Power related functions are specific to the laptop models below, but might work on similar models.
 
-| Laptop Model      |    Power Settings    |  Keyboard Backlight   |
-| ----------------- | -------------------- |-----------------------|
-| G15 5525          |  :white_check_mark:  |  :white_check_mark:   |
-| G15 5520          |  :white_check_mark:  |  :white_check_mark:   |
-| G15 5511          |  :white_check_mark:  |  :white_check_mark:   |
-| G16 7620          |  :white_check_mark:  |  :white_check_mark:   |
-| Alienware M16 R1  |  :white_check_mark:  |  :grey_question:      |
+| Laptop Model     |    Power Settings    | Keyboard Backlight |
+|------------------| -------------------- |--------------------|
+| G15 5525         |  :white_check_mark:  | :white_check_mark: |
+| G15 5520         |  :white_check_mark:  | :white_check_mark: |
+| G15 5511         |  :white_check_mark:  | :white_check_mark: |
+| G16 7620         |  :white_check_mark:  | :white_check_mark: |
+| G16 7630         |  :white_check_mark:  | :grey_question:    |
+| Alienware M16 R1 |  :white_check_mark:  | :grey_question:    |
 
 
 
