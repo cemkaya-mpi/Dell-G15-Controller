@@ -8,6 +8,7 @@ from PySide6.QtCore import (QSettings, QTimer)
 from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
                                QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
+from patch import g15_5530_patch
 from patch import g15_5520_patch
 from patch import g15_5515_patch
 from patch import g15_5511_patch
