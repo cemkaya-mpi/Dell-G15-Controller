@@ -18,8 +18,8 @@ class MainWindow(QWidget):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.is_dell_g15 = False
-        self.is_dell_g16 = False
+        self.is_dell_g_series = False
+        self.is_keyboard_supported = True # True by default, in case of no root access, keyboard lights should be adjustable.
         self.model = 'Unknown'
         try:
             self.logfile = open("/tmp/dell-g-series-controller.log","w")
@@ -40,7 +40,7 @@ class MainWindow(QWidget):
         grid.addWidget(QLabel(f'Device Model:'), 0, 0)
         grid.addWidget(QLabel(f'Dell {self.model}' if self.model != 'Unknown' else self.model), 0, 1)
         grid.addWidget(self._create_first_exclusive_group(), 1, 0)
-        if (self.is_root and self.is_dell_g15):
+        if (self.is_root and self.is_dell_g_series):
             grid.addWidget(self._create_second_exclusive_group(), 1, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(1000)
@@ -95,24 +95,25 @@ class MainWindow(QWidget):
 
         self._check_laptop_model()
 
-        if self.is_dell_g15:
+        if self.is_dell_g_series:
             print("Laptop model is supported.")
         else:
             choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods for G15 5525 anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            self.is_dell_g15 = (choice == QMessageBox.StandardButton.Yes) #User override
+            self.is_dell_g_series = (choice == QMessageBox.StandardButton.Yes) #User override
     
     def _check_laptop_model(self):
         """Check for supported laptop model"""
 
         # Detect Intel models
-        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMWW.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
         
         # Check if G15 5530
         if (laptop_model == "0x0"):
             # TODO - VERIFY-ME - Is "0x0" really the expected response, or should we use a different ACPI call for this model?
             print("Detected dell g15 5530. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = True
             self.model = "G15 5530"
             g15_5530_patch(self)
             return
@@ -120,7 +121,8 @@ class MainWindow(QWidget):
         # Check if G15 5520
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5520. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = True
             self.model = "G15 5520"
             g15_5520_patch(self)
             return
@@ -128,44 +130,47 @@ class MainWindow(QWidget):
         # Check if G15 5511
         if (laptop_model == "0xc80"):
             print("Detected dell g15 5511. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
-            g15_5511_patch(self)
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = True
             self.model = "G15 5511"
+            g15_5511_patch(self)
             return
 
         # Check if G16 7630
         if (laptop_model == "0x0"):
             # TODO - VERIFY-ME - Is "0x0" really the expected response, or should we use a different ACPI call for this model?
             print("Detected dell g16 7630. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g16 = True
-            self.is_dell_g15 = True
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = False
             self.model = "G16 7630"
             g16_7630_patch(self)
             return 
 
         # Detect AMD models
-        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" > /proc/acpi/call; cat /proc/acpi/call"
+        self.acpi_cmd = "echo \"\\_SB.AMW3.WMAX 0 {} {{{}, {}, {}, 0x00}}\" | tee /proc/acpi/call; cat /proc/acpi/call"
         laptop_model=self.acpi_call("get_laptop_model")
 
         # Check if G15 5525
         if (laptop_model == "0x12c0"):
             print("Detected dell g15 5525. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = True
             self.model = "G15 5525"
             return
 
         # Check if G15 5515
         if (laptop_model == "0xc80"):
             print("Detected dell g15 5515. Laptop model: 0x{}".format(laptop_model))
-            self.is_dell_g15 = True
-            g15_5515_patch(self)
+            self.is_dell_g_series = True
+            self.is_keyboard_supported = True
             self.model = "G15 5515"
+            g15_5515_patch(self)
 
         
     def _create_first_exclusive_group(self):
         groupBox = QGroupBox("Keyboard Led")
         vbox = QVBoxLayout()
-        if not self.is_dell_g16:
+        if self.is_keyboard_supported:
             self.state = (self.settings.value("State", "Off"))
             # Create widgets
             self.red_label = QLabel("Red Static")
